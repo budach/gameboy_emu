@@ -1,10 +1,10 @@
-COMPILER = gcc
-COMMONFLAGS = -Wall -Wextra -Werror -Wshadow -Wformat=2 -pipe -std=c17
+COMPILER = g++
+COMMONFLAGS = -Wall -Wextra -Werror -Wshadow -Wdouble-promotion -Wpedantic -Wformat=2 -pipe -std=c++20
 DEBUGFLAGS = -O0 -g3
 RELEASEFLAGS = -flto -march=native -O3 -s
 LDFLAGS = -lraylib -lopengl32 -lgdi32 -lwinmm
 
-FILES = src/main.c
+FILES = src/main.cpp
 EXECUTABLE = gameboy.exe
 
 release:

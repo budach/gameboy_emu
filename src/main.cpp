@@ -2,7 +2,7 @@
 
 int main()
 {
-    InitWindow(800, 600, "Gameboy Emulator");
+    InitWindow(800, 720, "Gameboy Emulator");
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
