@@ -17,6 +17,11 @@ https://izik1.github.io/gbops/index.html
 https://gbdev.io/pandocs/About.html
 https://gekkio.fi/files/gb-docs/gbctr.pdf
 
+https://raw.githubusercontent.com/geaz/emu-gameboy/master/docs/The%20Cycle-Accurate%20Game%20Boy%20Docs.pdf
+
+https://github.com/Ashiepaws/GBEDG
+
+https://robertovaccari.com/blog/2020_09_26_gameboy/
 
 # dependencies
 
