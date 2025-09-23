@@ -7,9 +7,9 @@ struct Gameboy;
 
 struct Opcode
 {
-    std::string name;
-    uint8_t (*execute)(Gameboy &gb);
-    uint8_t length;
+    std::string name;                // human-readable name
+    uint8_t (*execute)(Gameboy &gb); // function pointer to execute the opcode, returns t-cycles
+    uint8_t length;                  // length in bytes (including opcode byte)
 };
 
 // opcode function declarations (definitions in opcodes.cpp)
