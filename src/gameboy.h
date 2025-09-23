@@ -1,17 +1,17 @@
 #pragma once
 
-#include <vector>
 #include <cstdint>
 #include <string>
-#include "opcode.h"
+
+#include "opcodes.h"
+#include "mmu.h"
 
 const size_t GB_NUM_OPCODES = 256;
-const size_t GB_ADDRESSABLE_MEM = 0x10000; // 64KB
 
 struct Gameboy
 {
     Opcode opcode_table[GB_NUM_OPCODES]; // opcode lookup table
-    std::vector<uint8_t> mem;            // memory
+    MMU mmu;                             // memory management unit
     uint16_t SP;                         // stack pointer
     uint16_t PC;                         // program counter
 
@@ -62,19 +62,7 @@ struct Gameboy
         } HL_bytes;
     };
 
-    Gameboy(const std::string &rom_filename);
+    Gameboy(const std::string &boot_rom_filename);
 
     void run_cycle();
-    uint8_t read_mem(uint16_t address);
-    void write_mem(uint16_t address, uint8_t value);
 };
-
-inline uint8_t Gameboy::read_mem(uint16_t address)
-{
-    return mem[address];
-}
-
-inline void Gameboy::write_mem(uint16_t address, uint8_t value)
-{
-    mem[address] = value;
-}

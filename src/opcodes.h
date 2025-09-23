@@ -14,6 +14,7 @@ struct Opcode
     uint8_t mcycles;
 };
 
+// opcode function declarations (definitions in opcodes.cpp)
 void op_0x21_LD_HL_u16(Gameboy &gb);
 void op_0x31_LD_SP_u16(Gameboy &gb);
 void op_0x32_LD_HLm_A(Gameboy &gb);
