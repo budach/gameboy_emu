@@ -21,13 +21,13 @@ Gameboy::Gameboy(const std::string &boot_rom_filename)
     // init opcodes
     for (size_t i = 0; i < GB_NUM_OPCODES; i++)
     {
-        opcode_table[i] = {"UNIMPLEMENTED", &op_unimplemented, 0, 0, 0};
+        opcode_table[i] = {"UNIMPLEMENTED", op_unimplemented, 0};
     }
 
-    opcode_table[0x21] = {"LD HL,u16", &op_0x21_LD_HL_u16, 3, 12, 3};
-    opcode_table[0x31] = {"LD SP,d16", &op_0x31_LD_SP_u16, 3, 12, 3};
-    opcode_table[0x32] = {"LD (HL-),A", &op_0x32_LD_HLm_A, 1, 8, 2};
-    opcode_table[0xAF] = {"XOR A,A", &op_0xAF_XOR_A_A, 1, 4, 1};
+    opcode_table[0x21] = {"LD HL,u16", op_0x21_LD_HL_u16, 3};
+    opcode_table[0x31] = {"LD SP,d16", op_0x31_LD_SP_u16, 3};
+    opcode_table[0x32] = {"LD (HL-),A", op_0x32_LD_HLm_A, 1};
+    opcode_table[0xAF] = {"XOR A,A", op_0xAF_XOR_A_A, 1};
 }
 
 void Gameboy::run_cycle()
