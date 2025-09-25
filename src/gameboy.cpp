@@ -6,18 +6,6 @@
 
 Gameboy::Gameboy(const std::string &boot_rom_filename, const std::string &game_rom_filename)
 {
-    // init registers
-
-    AF = 0;
-    BC = 0;
-    DE = 0;
-    HL = 0;
-
-    // init stack pointer and program counter
-
-    SP = 0;
-    PC = 0;
-
     // init memory
 
     mmu.load_boot_rom(boot_rom_filename);
@@ -76,18 +64,18 @@ Gameboy::Gameboy(const std::string &boot_rom_filename, const std::string &game_r
 
 uint8_t Gameboy::run_opcode()
 {
-    uint8_t opcode = mmu.read8(PC);
+    uint8_t opcode = mmu.read8(cpu.PC);
 
     if (opcode != 0xCB)
     {
         std::cout << "Executing opcode:\t0x" << std::hex << (int)opcode
-                  << " at PC: 0x" << PC << std::dec << std::endl;
+                  << " at PC: 0x" << cpu.PC << std::dec << std::endl;
     }
     else
     {
-        uint8_t cb_opcode = mmu.read8(PC + 1);
+        uint8_t cb_opcode = mmu.read8(cpu.PC + 1);
         std::cout << "Executing CB opcode:\t0xCB 0x" << std::hex << (int)cb_opcode
-                  << " at PC: 0x" << PC << std::dec << std::endl;
+                  << " at PC: 0x" << cpu.PC << std::dec << std::endl;
     }
 
     return opcodes[opcode](*this);
