@@ -197,6 +197,210 @@ uint8_t op_0xCB_0x11_RL_C(Gameboy &gb)
     return 8;
 }
 
+uint8_t op_0x17_RLA(Gameboy &gb)
+{
+    uint8_t old_a = gb.AF_bytes.A;
+    uint8_t carry_in = (gb.AF_bytes.F & GB_FLAG_C) ? 1 : 0;
+
+    // rotate left through carry
+    gb.AF_bytes.A = (old_a << 1) | carry_in;
+
+    gb.AF_bytes.F = 0;                                  // clear all flags
+    gb.AF_bytes.F |= ((old_a & 0x80) >> 7) * GB_FLAG_C; // C flag if old bit 7 was set
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0xC1_POP_BC(Gameboy &gb)
+{
+    gb.BC = gb.mmu.read16(gb.SP); // read 16-bit value from memory at address SP into BC
+    gb.SP += 2;                   // increment stack pointer by 2
+
+    gb.PC += 1;
+    return 12;
+}
+
+uint8_t op_0x05_DEC_B(Gameboy &gb)
+{
+    gb.BC_bytes.B -= 1;
+
+    gb.AF_bytes.F &= GB_FLAG_C;                                      // preserve C flag, clear others
+    gb.AF_bytes.F |= GB_FLAG_N;                                      // set N flag (bit 6)
+    gb.AF_bytes.F |= ((gb.BC_bytes.B == 0) * GB_FLAG_Z);             // Z flag if result is 0
+    gb.AF_bytes.F |= (((gb.BC_bytes.B & 0x0F) == 0x0F) * GB_FLAG_H); // H flag if borrow from bit 4
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x22_LD_HLp_A(Gameboy &gb)
+{
+    gb.mmu.write8(gb.HL++, gb.AF_bytes.A); // store A into memory at address HL, then increment HL
+
+    gb.PC += 1;
+    return 8;
+}
+
+uint8_t op_0x23_INC_HL(Gameboy &gb)
+{
+    gb.HL += 1; // increment HL
+
+    gb.PC += 1;
+    return 8;
+}
+
+uint8_t op_0xC9_RET(Gameboy &gb)
+{
+    gb.PC = gb.mmu.read16(gb.SP); // pop return address from stack into PC
+    gb.SP += 2;                   // increment stack pointer by 2
+
+    return 16;
+}
+
+uint8_t op_0x13_INC_DE(Gameboy &gb)
+{
+    gb.DE += 1; // increment DE
+
+    gb.PC += 1;
+    return 8;
+}
+
+uint8_t op_0x7B_LD_A_E(Gameboy &gb)
+{
+    gb.AF_bytes.A = gb.DE_bytes.E; // copy E into A
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0xFE_CP_A_u8(Gameboy &gb)
+{
+    uint8_t value = gb.mmu.read8(gb.PC + 1);
+    uint8_t result = gb.AF_bytes.A - value;
+
+    gb.AF_bytes.F = GB_FLAG_N;                                                // set N flag, clear others
+    gb.AF_bytes.F |= ((result == 0) * GB_FLAG_Z);                             // Z flag if result is 0
+    gb.AF_bytes.F |= (((gb.AF_bytes.A & 0x0F) < (value & 0x0F)) * GB_FLAG_H); // H flag if borrow from bit 4
+    gb.AF_bytes.F |= ((gb.AF_bytes.A < value) * GB_FLAG_C);                   // C flag if borrow (A < value)
+
+    gb.PC += 2;
+    return 8;
+}
+
+uint8_t op_0xEA_LD_u16_A(Gameboy &gb)
+{
+    uint16_t addr = gb.mmu.read16(gb.PC + 1);
+    gb.mmu.write8(addr, gb.AF_bytes.A); // write A to address
+
+    gb.PC += 3;
+    return 16;
+}
+
+uint8_t op_0x3D_DEC_A(Gameboy &gb)
+{
+    gb.AF_bytes.A -= 1;
+
+    gb.AF_bytes.F &= GB_FLAG_C;                                      // preserve C flag, clear others
+    gb.AF_bytes.F |= GB_FLAG_N;                                      // set N flag
+    gb.AF_bytes.F |= ((gb.AF_bytes.A == 0) * GB_FLAG_Z);             // Z flag if result is 0
+    gb.AF_bytes.F |= (((gb.AF_bytes.A & 0x0F) == 0x0F) * GB_FLAG_H); // H flag if borrow from bit 4
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x28_JR_Z_i8(Gameboy &gb)
+{
+    int8_t offset = static_cast<int8_t>(gb.mmu.read8(gb.PC + 1)); // read signed 8-bit offset
+
+    gb.PC += 2; // move to next instruction first, offset is relative from there
+
+    if (gb.AF_bytes.F & GB_FLAG_Z) // if Z flag set
+    {
+        gb.PC += offset;
+        return 12;
+    }
+
+    return 8;
+}
+
+uint8_t op_0x0D_DEC_C(Gameboy &gb)
+{
+    gb.BC_bytes.C -= 1;
+
+    gb.AF_bytes.F &= GB_FLAG_C;                                      // preserve C flag, clear others
+    gb.AF_bytes.F |= GB_FLAG_N;                                      // set N flag
+    gb.AF_bytes.F |= ((gb.BC_bytes.C == 0) * GB_FLAG_Z);             // Z flag if result is 0
+    gb.AF_bytes.F |= (((gb.BC_bytes.C & 0x0F) == 0x0F) * GB_FLAG_H); // H flag if borrow from bit 4
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x2E_LD_L_u8(Gameboy &gb)
+{
+    gb.HL_bytes.L = gb.mmu.read8(gb.PC + 1); // load 8-bit value into L register
+
+    gb.PC += 2;
+    return 8;
+}
+
+uint8_t op_0x18_JR_i8(Gameboy &gb)
+{
+    int8_t offset = static_cast<int8_t>(gb.mmu.read8(gb.PC + 1)); // read signed 8-bit offset
+
+    gb.PC += 2; // move to next instruction first, offset is relative from there
+    gb.PC += offset;
+
+    return 12;
+}
+
+uint8_t op_0x67_LD_H_A(Gameboy &gb)
+{
+    gb.HL_bytes.H = gb.AF_bytes.A; // copy A into H
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x57_LD_D_A(Gameboy &gb)
+{
+    gb.DE_bytes.D = gb.AF_bytes.A; // copy A into D
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x04_INC_B(Gameboy &gb)
+{
+    gb.BC_bytes.B += 1; // increment B
+
+    gb.AF_bytes.F &= GB_FLAG_C;                                   // preserve C flag, clear others
+    gb.AF_bytes.F |= ((gb.BC_bytes.B == 0) * GB_FLAG_Z);          // Z flag if result is 0
+    gb.AF_bytes.F |= (((gb.BC_bytes.B & 0x0F) == 0) * GB_FLAG_H); // H flag if low nibble overflowed
+
+    gb.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x1E_LD_E_u8(Gameboy &gb)
+{
+    gb.DE_bytes.E = gb.mmu.read8(gb.PC + 1); // load 8-bit value into E register
+
+    gb.PC += 2;
+    return 8;
+}
+
+uint8_t op_0xF0_LD_A_FF00_u8(Gameboy &gb)
+{
+    // load A from address (0xFF00 + u8)
+    gb.AF_bytes.A = gb.mmu.read8(0xFF00 + gb.mmu.read8(gb.PC + 1));
+
+    gb.PC += 2;
+    return 12;
+}
+
 uint8_t op_unimplemented(Gameboy &gb)
 {
     std::cerr << "Unimplemented opcode: 0x" << std::hex
