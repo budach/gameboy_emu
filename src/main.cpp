@@ -2,10 +2,15 @@
 
 int main()
 {
-    Gameboy gb("test_roms/dmg_boot.gb");
+    Gameboy gb("test_roms/dmg_boot.bin", "test_roms/game.gb");
+
+    uint64_t cycles = 0;
+
     while (true)
     {
-        gb.run_cycle();
+        cycles += gb.run_opcode();
+        // TODO handle timers, interrupts, etc. based on cycles
     }
+
     return 0;
 }

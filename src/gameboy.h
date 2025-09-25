@@ -3,17 +3,25 @@
 #include <cstdint>
 #include <string>
 
-#include "opcodes.h"
 #include "mmu.h"
+#include "opcodes.h"
 
+// 256 "normal" opcodes and 256 CB-prefixed opcodes = 512 total
 const size_t GB_NUM_OPCODES = 256;
+
+// flag bit masks for the F register
+constexpr uint8_t GB_FLAG_Z = 1 << 7; // zero flag
+constexpr uint8_t GB_FLAG_N = 1 << 6; // subtract flag
+constexpr uint8_t GB_FLAG_H = 1 << 5; // half Carry flag
+constexpr uint8_t GB_FLAG_C = 1 << 4; // carry flag
 
 struct Gameboy
 {
-    Opcode opcode_table[GB_NUM_OPCODES]; // opcode lookup table
-    MMU mmu;                             // memory management unit
-    uint16_t SP;                         // stack pointer
-    uint16_t PC;                         // program counter
+    uint8_t (*opcodes[GB_NUM_OPCODES])(Gameboy &);    // opcode lookup table
+    uint8_t (*cb_opcodes[GB_NUM_OPCODES])(Gameboy &); // CB-prefixed opcode lookup table
+    MMU mmu;                                          // memory management unit
+    uint16_t SP;                                      // stack pointer
+    uint16_t PC;                                      // program counter
 
     // registers
     union
@@ -25,12 +33,6 @@ struct Gameboy
             uint8_t A; // high
         } AF_bytes;
     };
-
-    // flag bits in the F register:
-    // bit 7 - Z - zero Flag
-    // bit 6 - N - subtract Flag
-    // bit 5 - H - half Carry Flag
-    // bit 4 - C - carry Flag
 
     union
     {
@@ -62,7 +64,7 @@ struct Gameboy
         } HL_bytes;
     };
 
-    Gameboy(const std::string &boot_rom_filename);
+    Gameboy(const std::string &boot_rom_filename, const std::string &game_rom_filename);
 
-    void run_cycle();
+    uint8_t run_opcode();
 };
