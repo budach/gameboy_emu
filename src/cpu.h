@@ -51,7 +51,9 @@ struct CPU
         } HL_bytes;
     };
 
-    uint16_t SP, PC; // stack pointer and program counter
+    uint16_t SP, PC;    // stack pointer and program counter
+    bool IME;           // Interrupt Master Enable flag
+    bool IME_scheduled; // whether to enable IME after next instruction
 
     CPU();
 };

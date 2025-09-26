@@ -9,4 +9,7 @@ CPU::CPU()
     HL = 0x014D;
     SP = 0xFFFE;
     PC = 0x0100;
+
+    IME = false;
+    IME_scheduled = false;
 }
