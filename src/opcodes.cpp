@@ -401,6 +401,127 @@ uint8_t op_0xF0_LD_A_FF00_u8(Gameboy &gb)
     return 12;
 }
 
+uint8_t op_0x1D_DEC_E(Gameboy &gb)
+{
+    gb.cpu.DE_bytes.E -= 1;
+
+    gb.cpu.AF_bytes.F &= CPU_FLAG_C;                                          // preserve C flag, clear others
+    gb.cpu.AF_bytes.F |= CPU_FLAG_N;                                          // set N flag (bit 6)
+    gb.cpu.AF_bytes.F |= ((gb.cpu.DE_bytes.E == 0) * CPU_FLAG_Z);             // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.DE_bytes.E & 0x0F) == 0x0F) * CPU_FLAG_H); // H flag if borrow from bit 4
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x24_INC_H(Gameboy &gb)
+{
+    gb.cpu.HL_bytes.H += 1; // increment H
+
+    gb.cpu.AF_bytes.F &= CPU_FLAG_C;                                       // preserve C flag, clear others
+    gb.cpu.AF_bytes.F |= ((gb.cpu.HL_bytes.H == 0) * CPU_FLAG_Z);          // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.HL_bytes.H & 0x0F) == 0) * CPU_FLAG_H); // H flag if low nibble overflowed
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x7C_LD_A_H(Gameboy &gb)
+{
+    gb.cpu.AF_bytes.A = gb.cpu.HL_bytes.H; // copy H into A
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x90_SUB_A_B(Gameboy &gb)
+{
+    uint8_t value = gb.cpu.BC_bytes.B;
+    uint8_t result = gb.cpu.AF_bytes.A - value;
+
+    gb.cpu.AF_bytes.F = CPU_FLAG_N;                                                    // set N flag, clear others
+    gb.cpu.AF_bytes.F |= ((result == 0) * CPU_FLAG_Z);                                 // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.AF_bytes.A & 0x0F) < (value & 0x0F)) * CPU_FLAG_H); // H flag if borrow from bit 4
+    gb.cpu.AF_bytes.F |= ((gb.cpu.AF_bytes.A < value) * CPU_FLAG_C);                   // C flag if borrow (A < value)
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x15_DEC_D(Gameboy &gb)
+{
+    gb.cpu.DE_bytes.D -= 1;
+
+    gb.cpu.AF_bytes.F &= CPU_FLAG_C;                                          // preserve C flag, clear others
+    gb.cpu.AF_bytes.F |= CPU_FLAG_N;                                          // set N flag (bit 6)
+    gb.cpu.AF_bytes.F |= ((gb.cpu.DE_bytes.D == 0) * CPU_FLAG_Z);             // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.DE_bytes.D & 0x0F) == 0x0F) * CPU_FLAG_H); // H flag if borrow from bit 4
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x16_LD_D_u8(Gameboy &gb)
+{
+    gb.cpu.DE_bytes.D = gb.mmu.read8(gb.cpu.PC + 1); // load 8-bit value into D register
+
+    gb.cpu.PC += 2;
+    return 8;
+}
+
+uint8_t op_0xBE_CP_A_HL(Gameboy &gb)
+{
+    uint8_t value = gb.mmu.read8(gb.cpu.HL);
+    uint8_t result = gb.cpu.AF_bytes.A - value;
+
+    gb.cpu.AF_bytes.F = CPU_FLAG_N;                                                    // set N flag, clear others
+    gb.cpu.AF_bytes.F |= ((result == 0) * CPU_FLAG_Z);                                 // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.AF_bytes.A & 0x0F) < (value & 0x0F)) * CPU_FLAG_H); // H flag if borrow from bit 4
+    gb.cpu.AF_bytes.F |= ((gb.cpu.AF_bytes.A < value) * CPU_FLAG_C);                   // C flag if borrow (A < value)
+
+    gb.cpu.PC += 1;
+    return 8;
+}
+
+uint8_t op_0x7D_LD_A_L(Gameboy &gb)
+{
+    gb.cpu.AF_bytes.A = gb.cpu.HL_bytes.L; // copy L into A
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x78_LD_A_B(Gameboy &gb)
+{
+    gb.cpu.AF_bytes.A = gb.cpu.BC_bytes.B; // copy B into A
+
+    gb.cpu.PC += 1;
+    return 4;
+}
+
+uint8_t op_0x86_ADD_A_HL(Gameboy &gb)
+{
+    uint8_t value = gb.mmu.read8(gb.cpu.HL);
+    uint16_t result = static_cast<uint16_t>(gb.cpu.AF_bytes.A) + static_cast<uint16_t>(value);
+
+    gb.cpu.AF_bytes.F = 0;                                                                    // clear all flags
+    gb.cpu.AF_bytes.F |= ((result & 0xFF) == 0) * CPU_FLAG_Z;                                 // Z flag if result is 0
+    gb.cpu.AF_bytes.F |= (((gb.cpu.AF_bytes.A & 0x0F) + (value & 0x0F)) > 0x0F) * CPU_FLAG_H; // H flag if carry from bit 4
+    gb.cpu.AF_bytes.F |= ((result > 0xFF) * CPU_FLAG_C);                                      // C flag if carry (result > 255)
+
+    gb.cpu.AF_bytes.A = static_cast<uint8_t>(result & 0xFF); // store low 8 bits of result in A
+
+    gb.cpu.PC += 1;
+    return 8;
+}
+
+uint8_t op_0x00_NOP(Gameboy &gb)
+{
+    gb.cpu.PC += 1; // simply advance PC by 1
+
+    return 4;
+}
+
 uint8_t op_unimplemented(Gameboy &gb)
 {
     std::cerr << "Unimplemented opcode: 0x" << std::hex

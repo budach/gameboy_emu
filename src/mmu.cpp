@@ -62,8 +62,6 @@ uint8_t MMU::read8(uint16_t address) const
         return boot_rom_mem[address];
     }
 
-    std::cout << "Reading from game at address: 0x" << std::hex << address
-              << std::dec << std::endl;
     return mem[address];
 }
 
@@ -76,6 +74,7 @@ void MMU::write8(uint16_t address, uint8_t value)
 {
     if (address == 0xFF50 && boot_rom_active)
     {
+        std::cout << "Disabling boot ROM" << std::endl;
         boot_rom_active = false;
         return;
     }

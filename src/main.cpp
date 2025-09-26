@@ -11,7 +11,6 @@ int main()
         uint8_t cycles_this_step = gb.run_opcode();
         cycles += cycles_this_step;
         gb.ppu.step(cycles_this_step);
-        //   TODO handle timers, interrupts, etc. based on cycles
     }
 
     return 0;
