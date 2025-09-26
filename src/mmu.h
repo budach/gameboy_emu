@@ -5,17 +5,13 @@
 #include <vector>
 
 const size_t MMU_ADDRESSABLE_MEM = 0x10000; // 64KB
-const size_t MMU_BOOT_ROM_SIZE = 0x0100;    // 256 bytes
 
 struct MMU
 {
     std::vector<uint8_t> mem;
-    std::vector<uint8_t> boot_rom_mem;
-    bool boot_rom_active;
 
     MMU();
 
-    void load_boot_rom(const std::string &filename);
     void load_game_rom(const std::string &filename);
 
     uint8_t read8(uint16_t address) const;

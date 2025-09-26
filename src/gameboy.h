@@ -19,7 +19,7 @@ struct Gameboy
     CPU cpu;                                          // CPU registers and state
     PPU ppu;                                          // pixel processing unit
 
-    Gameboy(const std::string &boot_rom_filename, const std::string &game_rom_filename);
+    Gameboy(const std::string &game_rom_filename);
 
     uint8_t run_opcode();
 };

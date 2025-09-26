@@ -8,30 +8,51 @@
 MMU::MMU()
 {
     mem.resize(MMU_ADDRESSABLE_MEM, 0);
-    boot_rom_mem.resize(MMU_BOOT_ROM_SIZE, 0);
-    boot_rom_active = false;
-}
 
-void MMU::load_boot_rom(const std::string &filename)
-{
-    std::ifstream file(filename, std::ios::binary);
-
-    if (!file)
-    {
-        std::cerr << "Failed to open ROM file: " << filename << std::endl;
-        exit(1);
-    }
-
-    std::vector<uint8_t> buffer(std::istreambuf_iterator<char>(file), {});
-
-    if (buffer.size() != 256)
-    {
-        std::cerr << "Boot ROM must be exactly 256 bytes" << std::endl;
-        exit(1);
-    }
-
-    std::copy(buffer.begin(), buffer.end(), boot_rom_mem.begin());
-    boot_rom_active = true;
+    // set hardware registers to initial values after boot ROM execution
+    // from https://gbdev.io/pandocs/Power_Up_Sequence.html
+    mem[0xFF00] = 0xCF;
+    mem[0xFF01] = 0x00;
+    mem[0xFF02] = 0x7E;
+    mem[0xFF04] = 0xAB;
+    mem[0xFF05] = 0x00;
+    mem[0xFF06] = 0x00;
+    mem[0xFF07] = 0xF8;
+    mem[0xFF0F] = 0xE1;
+    mem[0xFF10] = 0x80;
+    mem[0xFF11] = 0xBF;
+    mem[0xFF12] = 0xF3;
+    mem[0xFF13] = 0xFF;
+    mem[0xFF14] = 0xBF;
+    mem[0xFF16] = 0x3F;
+    mem[0xFF17] = 0x00;
+    mem[0xFF18] = 0xFF;
+    mem[0xFF19] = 0xBF;
+    mem[0xFF1A] = 0x7F;
+    mem[0xFF1B] = 0xFF;
+    mem[0xFF1C] = 0x9F;
+    mem[0xFF1D] = 0xFF;
+    mem[0xFF1E] = 0xBF;
+    mem[0xFF20] = 0xFF;
+    mem[0xFF21] = 0x00;
+    mem[0xFF22] = 0x00;
+    mem[0xFF23] = 0xBF;
+    mem[0xFF24] = 0x77;
+    mem[0xFF25] = 0xF3;
+    mem[0xFF26] = 0xF1;
+    mem[0xFF40] = 0x91;
+    mem[0xFF41] = 0x85;
+    mem[0xFF42] = 0x00;
+    mem[0xFF43] = 0x00;
+    mem[0xFF44] = 0x00;
+    mem[0xFF45] = 0x00;
+    mem[0xFF46] = 0xFF;
+    mem[0xFF47] = 0xFC;
+    mem[0xFF48] = 0x00;
+    mem[0xFF49] = 0x00;
+    mem[0xFF4A] = 0x00;
+    mem[0xFF4B] = 0x00;
+    mem[0xFFFF] = 0x00;
 }
 
 void MMU::load_game_rom(const std::string &filename)
@@ -57,11 +78,6 @@ void MMU::load_game_rom(const std::string &filename)
 
 uint8_t MMU::read8(uint16_t address) const
 {
-    if (boot_rom_active && address < MMU_BOOT_ROM_SIZE)
-    {
-        return boot_rom_mem[address];
-    }
-
     return mem[address];
 }
 
@@ -72,20 +88,6 @@ uint16_t MMU::read16(uint16_t address) const
 
 void MMU::write8(uint16_t address, uint8_t value)
 {
-    if (address == 0xFF50 && boot_rom_active)
-    {
-        std::cout << "Disabling boot ROM" << std::endl;
-        boot_rom_active = false;
-        return;
-    }
-
-    if (boot_rom_active && address < MMU_BOOT_ROM_SIZE)
-    {
-        std::cout << "Writing to boot ROM address 0x" << std::hex << address
-                  << std::dec << std::endl;
-        exit(1);
-    }
-
     mem[address] = value;
 }
 

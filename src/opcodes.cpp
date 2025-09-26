@@ -518,7 +518,6 @@ uint8_t op_0x86_ADD_A_HL(Gameboy &gb)
 uint8_t op_0x00_NOP(Gameboy &gb)
 {
     gb.cpu.PC += 1; // simply advance PC by 1
-
     return 4;
 }
 

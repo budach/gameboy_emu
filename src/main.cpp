@@ -2,7 +2,7 @@
 
 int main()
 {
-    Gameboy gb("test_roms/dmg_boot.bin", "test_roms/game.gb");
+    Gameboy gb("test_roms/game.gb");
 
     uint64_t cycles = 0;
 
