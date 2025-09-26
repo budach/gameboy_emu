@@ -4,7 +4,8 @@
 #include "opcodes.h"
 #include "gameboy.h"
 
-Gameboy::Gameboy(const std::string &boot_rom_filename, const std::string &game_rom_filename)
+Gameboy::Gameboy(const std::string &boot_rom_filename,
+                 const std::string &game_rom_filename) : ppu(mmu)
 {
     // init memory
 

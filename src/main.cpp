@@ -8,8 +8,10 @@ int main()
 
     while (true)
     {
-        cycles += gb.run_opcode();
-        // TODO handle timers, interrupts, etc. based on cycles
+        uint8_t cycles_this_step = gb.run_opcode();
+        cycles += cycles_this_step;
+        gb.ppu.step(cycles_this_step);
+        //   TODO handle timers, interrupts, etc. based on cycles
     }
 
     return 0;
